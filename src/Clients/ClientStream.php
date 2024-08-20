@@ -25,7 +25,7 @@ class ClientStream extends RequestClientAbstract
         return function_exists('fopen') && ini_get('allow_url_fopen') == true;
     }
 
-    public function request(string $url, string $method = 'GET', $headers = [], $content = null): Response
+    public function request(string $url, string $method = 'GET', array $headers = [],mixed $content = null): Response
     {   
         $response = new Response();
 

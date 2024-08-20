@@ -18,7 +18,7 @@ namespace WebStone\Requests\Clients;
  */
 interface RequestClientInterface
 {
-    public function request(string $url, string $method = 'GET', $headers = [], $content = null): Response;
+    public function request(string $url, string $method = 'GET', array $headers = [],mixed $content = null): Response;
     public function isSupported():bool;
 }
 /** End of RequestClientInterface **/
