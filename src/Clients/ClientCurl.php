@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace WebStone\Requests\Clients;
 
 use WebStone\Requests\Exceptions\EHttpException;
+use WebStone\Stdlib\Helpers\JsonHelper;
 use WebStone\Stdlib\Helpers\UrlHelper;
 
 /**
@@ -26,12 +27,12 @@ class ClientCurl extends RequestClientAbstract
         return function_exists('curl_init') && function_exists('curl_exec');
     }
 
-    public function request(string $url, string $method = 'GET', $headers = [], $content = null): Response
+    public function request(string $url, string $method = 'GET', array $headers = [], mixed $content = null): Response
     {
         $response = new Response();
 
         try {
-            if (!$url_parts = UrlHelper::parse($url)) {                
+            if (!$url_parts = UrlHelper::parse($url)) {
                 throw new EHttpException(501, sprintf('Malformed URL: %s', $url));
             }
 
@@ -55,12 +56,31 @@ class ClientCurl extends RequestClientAbstract
             switch ($method) {
                 case 'GET':
                     if ($content != null) {
-                        curl_setopt($handle, CURLOPT_URL, sprintf("%s?%s", $url, $content));
+                        if (JsonHelper::isJson($content)) {
+                            curl_setopt($handle, CURLOPT_URL, $url);
+                            curl_setopt($handle, CURLOPT_CUSTOMREQUEST, $method);
+                            curl_setopt($handle, CURLOPT_POSTFIELDS, $content);
+
+                            $headers = array_merge(
+                                $headers,
+                                [
+                                    'Content-Type' => 'application/json',
+                                    'Content-Length' => mb_strlen($content)
+                                ]
+                            );
+                        } else
+                            curl_setopt($handle, CURLOPT_URL, sprintf("%s?%s", $url, $content));
                     }
                     break;
                 case 'POST':
                     curl_setopt($handle, CURLOPT_POST, true);
                     curl_setopt($handle, CURLOPT_POSTFIELDS, $content);
+
+                    if (!JsonHelper::isJson($content)) {
+                        $headers['Content-Type']  = 'application/x-www-form-urlencoded; charset=utf-8';
+                    }
+                    $headers['Content-Length'] = mb_strlen($content);
+                    
                     break;
                 case 'HEAD':
                     curl_setopt($handle, CURLOPT_CUSTOMREQUEST, $method);

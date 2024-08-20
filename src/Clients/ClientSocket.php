@@ -25,7 +25,7 @@ class ClientSocket extends RequestClientAbstract
         return function_exists( 'fsockopen' );
     }
 
-    public function request(string $url, string $method = 'GET', $headers = [], $content = null): Response
+    public function request(string $url, string $method = 'GET', array $headers = [],mixed $content = null): Response
     {
         $response = new Response();
 
